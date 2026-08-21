@@ -167,6 +167,14 @@ En un servidor Windows que comparte carpetas mediante SMB normalmente se combina
 - **Permisos SMB:** regulan el acceso al recurso compartido a través de la red, con niveles como lectura, cambio o control total.
 - **Permisos NTFS:** regulan operaciones concretas sobre las carpetas y archivos del disco: listar, leer, leer y ejecutar, escribir, modificar o eliminar.
 
+#### Ejemplo visual: un grupo de Active Directory aplicado en NTFS
+
+![Pestaña Seguridad de la carpeta Finanzas con grupos del dominio y permisos NTFS](imagenes/permisos-ntfs-finanzas.jpg)
+
+En la imagen está seleccionado `EMPRESA\\Finanzas`, un grupo del dominio creado y administrado en Active Directory. Las casillas inferiores son los permisos NTFS asignados a ese grupo sobre `D:\\Departamentos\\Finanzas`: modificar, leer y ejecutar, mostrar el contenido, leer y escribir.
+
+> **Separación de responsabilidades:** Active Directory mantiene el grupo y determina qué usuarios pertenecen a él; la ACL NTFS de esta carpeta utiliza la identidad del grupo —técnicamente su SID— para permitir o denegar operaciones.
+
 El resultado efectivo por red queda limitado por la capa más restrictiva. Por ejemplo:
 
 ```text
