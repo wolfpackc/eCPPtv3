@@ -112,7 +112,51 @@ EMPRESA\eduardo
 > El usuario introduce su identidad y demuestra que conoce su contraseña. El motor estándar de AD DS procesa la solicitud y la contrasta con la información particular que la organización guarda en `NTDS.dit`. Si la autenticación es correcta, los grupos, permisos, ACL y políticas determinan posteriormente qué puede hacer el usuario.
 ---
 
-## 6. Después de autenticarse: acceso al servidor de archivos
+## 6. Unidades organizativas y grupos
+
+En Active Directory existen dos clasificaciones diferentes.
+
+### Unidades organizativas (OU)
+
+Indican **dónde está colocado** el usuario dentro de la organización:
+
+```text
+empresa.local
+└── Usuarios
+    ├── Finanzas
+    │   └── Eduardo
+    └── Informática
+        └── Pepe
+```
+
+Sirven principalmente para organizar usuarios y equipos y aplicarles GPO.
+
+### Grupos
+
+Indican **a qué colectivos pertenece** el usuario:
+
+```text
+Eduardo
+├── Finanzas
+├── Empleados
+└── Acceso-VPN
+```
+
+Los sistemas de permisos pueden utilizar estos grupos:
+
+```text
+Eduardo
+   ↓ pertenece
+Grupo Finanzas
+   ↓ tiene permiso
+Carpeta Finanzas
+```
+
+> **Idea clave:** la OU indica dónde está organizado Eduardo; los grupos indican sus funciones o accesos. Eduardo está colocado en una OU, pero puede pertenecer a muchos grupos. Moverlo de OU no modifica automáticamente sus grupos.
+
+---
+
+## 7. Después de autenticarse: acceso al servidor de archivos
 
 Una vez autenticado, el usuario puede solicitar recursos almacenados en otros servidores. En este escenario intervienen tres roles: el equipo cliente, el Domain Controller y el servidor de archivos.
 
