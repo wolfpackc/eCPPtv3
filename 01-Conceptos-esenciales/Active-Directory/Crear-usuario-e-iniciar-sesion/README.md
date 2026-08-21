@@ -110,3 +110,71 @@ EMPRESA\eduardo
 ## Idea clave
 
 > El usuario introduce su identidad y demuestra que conoce su contraseña. El motor estándar de AD DS procesa la solicitud y la contrasta con la información particular que la organización guarda en `NTDS.dit`. Si la autenticación es correcta, los grupos, permisos, ACL y políticas determinan posteriormente qué puede hacer el usuario.
+---
+
+## 6. Después de autenticarse: acceso al servidor de archivos
+
+Una vez autenticado, el usuario puede solicitar recursos almacenados en otros servidores. En este escenario intervienen tres roles: el equipo cliente, el Domain Controller y el servidor de archivos.
+
+```mermaid
+flowchart TD
+    PC["PC de Eduardo"] -->|"1. Inicio de sesión"| DC["Domain Controller con Active Directory"]
+    DC -->|"2. Identidad validada y grupos de Eduardo"| PC
+    DC -->|"3. La GPO conecta la unidad N:"| PC
+    PC -->|"4. Solicita \\FS01\Empleados-Nuevos"| FS["Servidor de archivos FS01"]
+    DC -.->|"Identidad y grupos del dominio"| FS
+
+    FS --> SHARE["Permisos SMB del recurso compartido"]
+    SHARE --> NTFS["Permisos NTFS de la carpeta o archivo"]
+    NTFS --> RESULT{"Permiso efectivo"}
+
+    RESULT -->|"Permitido"| READ["Puede leer según los permisos concedidos"]
+    RESULT -->|"Denegado"| DENY["Acceso denegado"]
+
+    FS --> OTHER["Otras carpetas: Dirección, RR. HH., Marketing y Finanzas"]
+    OTHER --> HIDDEN["Pueden estar ocultas o aparecer sin permitir el acceso"]
+```
+
+### Los tres roles
+
+1. **Equipos cliente:** ordenadores de Eduardo, Pepe y otros empleados. Desde ellos se inicia sesión y se solicitan recursos.
+2. **Domain Controller:** ejecuta Active Directory, autentica al usuario y permite conocer su identidad y los grupos a los que pertenece.
+3. **Servidor de archivos:** almacena físicamente las carpetas, fotografías, vídeos, documentos y otros archivos.
+
+El Domain Controller no almacena normalmente los archivos de trabajo ni concede por sí solo el acceso a una carpeta. Active Directory puede indicar que Eduardo pertenece a `EMPRESA\Empleados-Nuevos`, pero es el servidor de archivos el que mantiene una ACL que utiliza ese grupo:
+
+```text
+Carpeta: \\FS01\Empleados-Nuevos
+
+EMPRESA\Empleados-Nuevos
+└── Acceso permitido
+```
+
+Una GPO puede presentar el recurso conectándolo como unidad de red:
+
+```text
+N: → \\FS01\Empleados-Nuevos
+```
+
+Que la unidad aparezca no sustituye la comprobación de permisos. Cuando Eduardo intenta abrirla, `FS01` examina su identidad y aplica los permisos correspondientes.
+
+Las otras carpetas del servidor pueden no aparecer si está habilitada la **enumeración basada en acceso**. Si aparecen, al intentar abrirlas pueden devolver **Acceso denegado**.
+
+### Permisos SMB y NTFS
+
+En un servidor Windows que comparte carpetas mediante SMB normalmente se combinan dos capas:
+
+- **Permisos SMB:** regulan el acceso al recurso compartido a través de la red, con niveles como lectura, cambio o control total.
+- **Permisos NTFS:** regulan operaciones concretas sobre las carpetas y archivos del disco: listar, leer, leer y ejecutar, escribir, modificar o eliminar.
+
+El resultado efectivo por red queda limitado por la capa más restrictiva. Por ejemplo:
+
+```text
+Permiso SMB: cambiar
+Permiso NTFS: solo leer
+Resultado efectivo: solo lectura
+```
+
+Eduardo podría abrir documentos de `Empleados-Nuevos`, pero no modificarlos, eliminarlos ni ejecutar programas allí almacenados si los permisos NTFS no incluyen esas capacidades.
+
+> **Idea clave:** Active Directory autentica al usuario y proporciona su identidad y grupos; una GPO puede mostrar o conectar el recurso; y el servidor de archivos aplica los permisos SMB y NTFS que determinan lo que el usuario puede hacer realmente.
