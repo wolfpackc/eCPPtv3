@@ -91,3 +91,50 @@ La jerarquía mental correcta sería:
 Cada nivel puede estar gestionado por servidores DNS distintos mediante **delegaciones NS**.
 
 Y esto conecta muy bien con Active Directory, porque un dominio AD como `corp.miempresa.com` suele aprovechar exactamente esa jerarquía DNS.
+
+---
+
+
+La clave para unir **DNS normal de Internet** con **Active Directory** es esta: en un dominio AD, el DNS sigue funcionando con la misma lógica jerárquica, pero la zona que te interesa la gestiona **tu propio servidor DNS interno**, normalmente instalado en uno o varios controladores de dominio.
+
+Imagina que tu empresa tiene el dominio público `empresa.com`, pero para Active Directory usa `corp.empresa.com`. En Internet, `empresa.com` puede estar gestionado por Cloudflare, GoDaddy o quien sea. Pero dentro de tu red, los ordenadores están configurados para preguntar primero al **DNS interno del dominio**, por ejemplo el DC `192.168.1.10`. Ese DNS interno tiene una zona llamada `corp.empresa.com` y sabe cosas como:
+
+* `dc01.corp.empresa.com` → `192.168.1.10`
+* `pc01.corp.empresa.com` → `192.168.1.50`
+* `servidor-ficheros.corp.empresa.com` → `192.168.1.20`
+* y, además, registros especiales de AD como `_ldap._tcp...` o `_kerberos._tcp...`, que permiten localizar controladores de dominio, LDAP y Kerberos.
+
+Entonces, cuando un PC del dominio pregunta:
+
+**“¿Dónde está `dc01.corp.empresa.com`?”**
+
+no sale necesariamente a Internet. Pregunta a su DNS interno, y este responde directamente porque **él es autoritativo para `corp.empresa.com`**.
+
+Y aquí viene lo importante: cuando instalas AD DS y configuras DNS como **AD-integrated DNS**, la zona DNS puede almacenarse dentro de Active Directory y replicarse entre controladores de dominio. O sea, no es simplemente un archivo suelto en un DNS cualquiera: **los datos de la zona pueden viajar junto con la replicación de AD** entre DCs.
+
+Por eso puedes imaginarlo así:
+
+**Internet DNS:**
+`.` → `.com` → `empresa.com`
+
+**Red interna de la empresa:**
+`corp.empresa.com` → lo gestiona tu DNS interno / DC
+
+Y hay dos formas habituales de llegar a `corp.empresa.com`. Una es que el dominio público `empresa.com` tenga una **delegación DNS** diciendo “para `corp.empresa.com`, pregunta a estos servidores”. La otra, muy común en entornos internos, es que `corp.empresa.com` simplemente exista solo dentro de la red y los clientes sepan de él porque usan el DNS interno. En ese caso, desde Internet puede que ese dominio ni siquiera sea resoluble.
+
+Si usas algo como `empresa.local`, la idea es todavía más sencilla: normalmente es un nombre **puramente interno**. El DNS público de Internet no sabe nada de `empresa.local`; solo tus servidores DNS internos conocen esa zona.
+
+La frase que te puede dejar todo unido es:
+
+**“Active Directory no sustituye DNS: usa un servidor DNS interno que conoce la zona del dominio AD y permite localizar los servicios del dominio.”**
+
+Y todavía más resumido:
+
+**AD necesita DNS para encontrarse a sí mismo.**
+
+Cuando un equipo quiere iniciar sesión, no empieza diciendo mágicamente “habla con el DC”. Primero puede preguntar por DNS algo parecido a:
+
+**“¿Qué controlador de dominio ofrece Kerberos/LDAP para `corp.empresa.com`?”**
+
+DNS le indica dónde está el DC, y después el equipo ya habla con **Kerberos, LDAP, SMB, etc.**, cada uno por su propia “tubería”.
+
