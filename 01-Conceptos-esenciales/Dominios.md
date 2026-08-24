@@ -66,3 +66,28 @@ Cada uno puede representar un dominio DNS distinto, y en Active Directory inclus
 
 Eso sí: que exista `corp.empresa.com` no significa automáticamente que exista un dominio AD llamado así; alguien tiene que crearlo/configurarlo como dominio de Active Directory.
 
+# RUTA RUTA
+
+Sí, te estás explicando, y la idea general la tienes bastante bien, pero hay que ordenar un par de conceptos.
+
+Cuando buscas algo como `www.miempresa.com`, realmente existe un **punto raíz implícito** al final: `www.miempresa.com.`. La resolución DNS va por niveles. Primero se parte de la **raíz** (`.`), que sabe qué servidores llevan `.com`; luego los servidores de `.com` saben cuáles son los **servidores autoritativos** de `miempresa.com`; y finalmente esos servidores autoritativos de `miempresa.com` tienen la zona DNS de la empresa y responden sobre nombres como `www.miempresa.com`, `mail.miempresa.com`, `vpn.miempresa.com`, etc.
+
+La corrección importante es que `.com` no “elimina” `.com` ni entra en una tabla gigante buscando directamente tu empresa como si todo estuviera dentro del mismo servidor. Lo que hace es **delegar**: te dice “para `miempresa.com`, pregunta a estos servidores DNS”. Esos servidores aparecen en registros **NS**. Después, ya en la zona `miempresa.com`, puedes tener registros como **A/AAAA** para IPs, **CNAME** para alias, **MX** para correo, **TXT**, etc.
+
+Y lo que recuerdas de “una fila que apunta a otra tabla/otro servidor” seguramente es la **delegación de subdominios**. Por ejemplo, dentro de `miempresa.com` puedes tener:
+
+`corp.miempresa.com`
+
+y decidir que ese subdominio lo gestione otro servidor DNS distinto. Entonces en la zona `miempresa.com` hay registros **NS** que dicen: “para todo lo de `corp.miempresa.com`, pregunta a estos otros servidores”. Ahí sí se parece mucho a lo que tú describes de una tabla que apunta a otra tabla.
+
+La jerarquía mental correcta sería:
+
+`raíz .`
+→ `.com`
+→ `miempresa.com`
+→ `corp.miempresa.com`
+→ `pc1.corp.miempresa.com`
+
+Cada nivel puede estar gestionado por servidores DNS distintos mediante **delegaciones NS**.
+
+Y esto conecta muy bien con Active Directory, porque un dominio AD como `corp.miempresa.com` suele aprovechar exactamente esa jerarquía DNS.
