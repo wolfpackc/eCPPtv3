@@ -1,5 +1,10 @@
 # LDAP y DNS en Active Directory
 
+<img width="1448" height="1086" alt="ChatGPT Image 24 ago 2026, 20_11_26" src="https://github.com/user-attachments/assets/1713c31e-3c98-46da-acf3-5a688311646c" />
+
+
+<img width="1448" height="1086" alt="ChatGPT Image 24 ago 2026, 19_59_01" src="https://github.com/user-attachments/assets/7a11cdc2-d6de-4387-a06f-6de6fa7a2e1b" />
+
 ## La idea que debes tener en la cabeza
 
 LDAP y DNS hacen trabajos completamente distintos:
