@@ -1,4 +1,5 @@
 # Kerberos
+<img width="1448" height="1086" alt="ChatGPT Image 25 ago 2026, 14_14_13" src="https://github.com/user-attachments/assets/b5a85672-2d4b-4501-a181-f025bcd80df9" />
 
 ## Qué es
 
