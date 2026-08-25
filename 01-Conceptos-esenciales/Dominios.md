@@ -2,6 +2,9 @@ Cuando un equipo del dominio necesita hacer algo con Active Directory, por ejemp
 
 <img width="1448" height="1086" alt="ChatGPT Image 25 ago 2026, 13_54_34" src="https://github.com/user-attachments/assets/b777c166-a0f5-47cc-ad13-daec324622cd" />
 
+<img width="1448" height="1086" alt="ChatGPT Image 25 ago 2026, 14_05_08" src="https://github.com/user-attachments/assets/05e9d62d-8888-4890-873a-e333d9192d2f" />
+
+
 
 Una vez obtenida la IP del controlador de dominio, el DNS ya deja de intervenir en esa comunicación concreta. A partir de ahí, el ordenador habla directamente con el DC y le envía las peticiones correspondientes: paquetes Kerberos si quiere autenticarse con Kerberos, consultas LDAP si quiere obtener información del directorio, o el mecanismo correspondiente si interviene NTLM. La idea mental sería: **PC → DNS interno para localizar un DC que ofrezca el servicio necesario → obtiene su IP → PC habla directamente con el DC.**
 
