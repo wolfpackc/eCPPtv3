@@ -63,8 +63,11 @@ La idea importante es esta:
 Ejemplos:
 
 **TGT + `cifs/FILESERVER` → ticket para SMB de FILESERVER**
+
 **TGT + `ldap/DC01` → ticket para LDAP de DC01**
+
 **TGT + `HTTP/intranet.empresa.com` → ticket para esa web**
+
 
 En resumen: **el TGT se usa con Kerberos para pedir un ticket específico, y ese Service Ticket se presenta después al servicio concreto usando su propio protocolo: SMB, LDAP, HTTP, etc.**
 
