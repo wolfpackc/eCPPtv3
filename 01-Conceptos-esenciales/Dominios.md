@@ -1,4 +1,7 @@
-Sí, mejor dejarlo bastante más compacto para estudiar rápido:
+Cuando un equipo del dominio necesita hacer algo con Active Directory, por ejemplo autenticarse con Kerberos o consultar información de un usuario mediante LDAP, primero pregunta al **DNS interno** para encontrar un controlador de dominio adecuado. La idea superficial que te interesa es esta: el equipo pregunta algo como **“¿qué controlador de dominio ofrece Kerberos para `corp.empresa.com`?”** y el DNS interno responde indicándole un DC concreto y su dirección IP. <u>Es decir, el DNS interno sabe qué controladores de dominio ofrecen los servicios de Active Directory para ese dominio</u>, como Kerberos o LDAP, y ayuda al equipo a localizar uno.
+
+Una vez obtenida la IP del controlador de dominio, el DNS ya deja de intervenir en esa comunicación concreta. A partir de ahí, el ordenador habla directamente con el DC y le envía las peticiones correspondientes: paquetes Kerberos si quiere autenticarse con Kerberos, consultas LDAP si quiere obtener información del directorio, o el mecanismo correspondiente si interviene NTLM. La idea mental sería: **PC → DNS interno para localizar un DC que ofrezca el servicio necesario → obtiene su IP → PC habla directamente con el DC.**
+
 
 # ACTIVE DIRECTORY + DOMINIO + DNS
 
