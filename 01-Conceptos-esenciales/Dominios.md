@@ -1,140 +1,175 @@
-Sí. En Active Directory, **el dominio es el nombre lógico principal de la organización dentro del directorio**. Normalmente tiene formato DNS, por ejemplo `empresa.local`, `empresa.com` o `corp.empresa.com`. La parte de la derecha, como `.com`, `.es` o `.local`, se llama **TLD o sufijo de dominio**; y lo de la izquierda sería el nombre que tú eliges para identificar ese dominio.
+Sí, mejor dejarlo bastante más compacto para estudiar rápido:
 
-Ejemplos sencillos:
+# ACTIVE DIRECTORY + DOMINIO + DNS
 
-* Dominio: `empresa.local`
+En Active Directory, el **dominio** es el nombre lógico que identifica todo el entorno de la organización.
 
-  * Usuario: `juan@empresa.local`
-  * Formato antiguo: `EMPRESA\juan`
+Ejemplos:
 
-* Dominio: `policia.es`
+* `empresa.com`
+* `corp.empresa.com`
+* `empresa.local`
 
-  * Usuario: `maria@policia.es`
+Los usuarios pertenecen a ese dominio:
 
-* Dominio: `corp.empresa.com`
+`edu@corp.empresa.com`
 
-  * Usuario: `carlos@corp.empresa.com`
-
-Así que sí: cada usuario del dominio queda asociado a ese entorno. No es que “el usuario tenga un dominio pegado” como un dato decorativo, sino que **su cuenta existe dentro de ese dominio**.
-
-Un esquema mental bueno sería:
-
-**Dominio = frontera lógica del Active Directory**
-Dentro del dominio tienes:
-**usuarios + grupos + equipos + OU + políticas + controladores de dominio**
-
-Y los usuarios se identifican normalmente como:
-
-**usuario@dominio**
-
-Por ejemplo:
-
-**[edu@empresa.local](mailto:edu@empresa.local)**
-
-Una precisión: `empresa.com` puede coincidir con el dominio público de Internet de la empresa, pero no tiene por qué hacerlo. En AD también puedes usar algo como `ad.empresa.com` o `corp.empresa.com`.
-
-# corp.empresa.com
-Sí. `corp.empresa.com` puede ser perfectamente **el nombre DNS de un dominio de Active Directory**.
-
-Piensa así:
-
-* `empresa.com` puede ser el dominio público de la empresa.
-* `corp.empresa.com` puede ser el dominio interno de Active Directory.
-* Y entonces sí existirían usuarios como:
-
-  * `ana@corp.empresa.com`
-  * `pedro@corp.empresa.com`
-
-Ese `corp` que va a la izquierda es simplemente un **subdominio DNS**. En este caso, `corp.empresa.com` sería un dominio distinto de `empresa.com` a nivel DNS y podría usarse como dominio de AD.
-
-Ejemplo:
-
-**Dominio AD:** `corp.empresa.com`
-**Usuario:** `edu@corp.empresa.com`
-
-Y en formato clásico de Windows podría verse como:
+o en formato clásico:
 
 `CORP\edu`
 
-La idea importante es esta: **lo que aparece a la izquierda del dominio principal va creando niveles de subdominio**. Por ejemplo:
+Dentro del dominio tienes:
 
-`empresa.com`
-→ `corp.empresa.com`
-→ `madrid.corp.empresa.com`
-
-Cada uno puede representar un dominio DNS distinto, y en Active Directory incluso podrían existir como dominios diferentes dentro del mismo bosque.
-
-Eso sí: que exista `corp.empresa.com` no significa automáticamente que exista un dominio AD llamado así; alguien tiene que crearlo/configurarlo como dominio de Active Directory.
-
-# RUTA RUTA
-
-Sí, te estás explicando, y la idea general la tienes bastante bien, pero hay que ordenar un par de conceptos.
-
-Cuando buscas algo como `www.miempresa.com`, realmente existe un **punto raíz implícito** al final: `www.miempresa.com.`. La resolución DNS va por niveles. Primero se parte de la **raíz** (`.`), que sabe qué servidores llevan `.com`; luego los servidores de `.com` saben cuáles son los **servidores autoritativos** de `miempresa.com`; y finalmente esos servidores autoritativos de `miempresa.com` tienen la zona DNS de la empresa y responden sobre nombres como `www.miempresa.com`, `mail.miempresa.com`, `vpn.miempresa.com`, etc.
-
-La corrección importante es que `.com` no “elimina” `.com` ni entra en una tabla gigante buscando directamente tu empresa como si todo estuviera dentro del mismo servidor. Lo que hace es **delegar**: te dice “para `miempresa.com`, pregunta a estos servidores DNS”. Esos servidores aparecen en registros **NS**. Después, ya en la zona `miempresa.com`, puedes tener registros como **A/AAAA** para IPs, **CNAME** para alias, **MX** para correo, **TXT**, etc.
-
-Y lo que recuerdas de “una fila que apunta a otra tabla/otro servidor” seguramente es la **delegación de subdominios**. Por ejemplo, dentro de `miempresa.com` puedes tener:
-
-`corp.miempresa.com`
-
-y decidir que ese subdominio lo gestione otro servidor DNS distinto. Entonces en la zona `miempresa.com` hay registros **NS** que dicen: “para todo lo de `corp.miempresa.com`, pregunta a estos otros servidores”. Ahí sí se parece mucho a lo que tú describes de una tabla que apunta a otra tabla.
-
-La jerarquía mental correcta sería:
-
-`raíz .`
-→ `.com`
-→ `miempresa.com`
-→ `corp.miempresa.com`
-→ `pc1.corp.miempresa.com`
-
-Cada nivel puede estar gestionado por servidores DNS distintos mediante **delegaciones NS**.
-
-Y esto conecta muy bien con Active Directory, porque un dominio AD como `corp.miempresa.com` suele aprovechar exactamente esa jerarquía DNS.
+**usuarios + grupos + equipos + OU + GPO + controladores de dominio**
 
 ---
 
+# `corp.empresa.com`
 
-La clave para unir **DNS normal de Internet** con **Active Directory** es esta: en un dominio AD, el DNS sigue funcionando con la misma lógica jerárquica, pero la zona que te interesa la gestiona **tu propio servidor DNS interno**, normalmente instalado en uno o varios controladores de dominio.
+`corp.empresa.com` puede ser perfectamente un dominio de Active Directory.
 
-Imagina que tu empresa tiene el dominio público `empresa.com`, pero para Active Directory usa `corp.empresa.com`. En Internet, `empresa.com` puede estar gestionado por Cloudflare, GoDaddy o quien sea. Pero dentro de tu red, los ordenadores están configurados para preguntar primero al **DNS interno del dominio**, por ejemplo el DC `192.168.1.10`. Ese DNS interno tiene una zona llamada `corp.empresa.com` y sabe cosas como:
+Por ejemplo:
 
-* `dc01.corp.empresa.com` → `192.168.1.10`
-* `pc01.corp.empresa.com` → `192.168.1.50`
-* `servidor-ficheros.corp.empresa.com` → `192.168.1.20`
-* y, además, registros especiales de AD como `_ldap._tcp...` o `_kerberos._tcp...`, que permiten localizar controladores de dominio, LDAP y Kerberos.
+**Dominio público:** `empresa.com`
+**Dominio interno AD:** `corp.empresa.com`
 
-Entonces, cuando un PC del dominio pregunta:
+`corp` no hace nada especial. Es simplemente un nombre elegido para organizar el dominio.
 
-**“¿Dónde está `dc01.corp.empresa.com`?”**
+También podrían haber usado:
 
-no sale necesariamente a Internet. Pregunta a su DNS interno, y este responde directamente porque **él es autoritativo para `corp.empresa.com`**.
+`ad.empresa.com`
 
-Y aquí viene lo importante: cuando instalas AD DS y configuras DNS como **AD-integrated DNS**, la zona DNS puede almacenarse dentro de Active Directory y replicarse entre controladores de dominio. O sea, no es simplemente un archivo suelto en un DNS cualquiera: **los datos de la zona pueden viajar junto con la replicación de AD** entre DCs.
+`internal.empresa.com`
 
-Por eso puedes imaginarlo así:
+---
 
-**Internet DNS:**
-`.` → `.com` → `empresa.com`
+# DNS
 
-**Red interna de la empresa:**
-`corp.empresa.com` → lo gestiona tu DNS interno / DC
+DNS funciona de forma jerárquica:
 
-Y hay dos formas habituales de llegar a `corp.empresa.com`. Una es que el dominio público `empresa.com` tenga una **delegación DNS** diciendo “para `corp.empresa.com`, pregunta a estos servidores”. La otra, muy común en entornos internos, es que `corp.empresa.com` simplemente exista solo dentro de la red y los clientes sepan de él porque usan el DNS interno. En ese caso, desde Internet puede que ese dominio ni siquiera sea resoluble.
+`.`
+↓
+`.com`
+↓
+`empresa.com`
+↓
+`corp.empresa.com`
 
-Si usas algo como `empresa.local`, la idea es todavía más sencilla: normalmente es un nombre **puramente interno**. El DNS público de Internet no sabe nada de `empresa.local`; solo tus servidores DNS internos conocen esa zona.
+Los registros **NS** permiten delegar una parte del dominio a otros servidores DNS.
 
-La frase que te puede dejar todo unido es:
+Por ejemplo:
 
-**“Active Directory no sustituye DNS: usa un servidor DNS interno que conoce la zona del dominio AD y permite localizar los servicios del dominio.”**
+`empresa.com`
 
-Y todavía más resumido:
+puede decir:
 
-**AD necesita DNS para encontrarse a sí mismo.**
+> Para `corp.empresa.com`, pregunta a estos otros servidores DNS.
 
-Cuando un equipo quiere iniciar sesión, no empieza diciendo mágicamente “habla con el DC”. Primero puede preguntar por DNS algo parecido a:
+---
 
-**“¿Qué controlador de dominio ofrece Kerberos/LDAP para `corp.empresa.com`?”**
+# DNS EN ACTIVE DIRECTORY
 
-DNS le indica dónde está el DC, y después el equipo ya habla con **Kerberos, LDAP, SMB, etc.**, cada uno por su propia “tubería”.
+Active Directory **necesita DNS**.
 
+Normalmente los equipos del dominio utilizan un **DNS interno**, muchas veces instalado en los propios controladores de dominio.
+
+Ese DNS conoce, por ejemplo:
+
+`dc01.corp.empresa.com` → `192.168.1.10`
+
+`fileserver.corp.empresa.com` → `192.168.1.20`
+
+Además tiene registros especiales para localizar servicios como:
+
+* Kerberos
+* LDAP
+* Controladores de dominio
+
+La idea clave es:
+
+**AD necesita DNS para encontrar sus servicios.**
+
+---
+
+# EJEMPLO NOVATECH
+
+NovaTech instala Windows Server y crea:
+
+**Dominio AD:** `corp.novatech.com`
+
+Después crea:
+
+* usuarios
+* grupos
+* equipos
+* GPO
+
+Los PCs se unen al dominio y utilizan el DNS interno.
+
+Cuando Ana inicia sesión:
+
+**Ana escribe**
+`ana@corp.novatech.com`
+
+↓
+
+**DNS localiza el DC**
+
+↓
+
+**Kerberos autentica**
+
+↓
+
+**LDAP consulta usuarios y grupos**
+
+↓
+
+**GPO aplica configuraciones**
+
+↓
+
+**SMB/NTFS usa esos grupos para dar acceso a carpetas**
+
+Por ejemplo:
+
+`Ana`
+↓
+`Grupo Finanzas`
+↓
+`\\fileserver\finanzas`
+↓
+✅ Acceso
+
+---
+
+# RESUMEN PARA MEMORIZAR
+
+**Dominio** → identifica el entorno AD.
+**DNS** → encuentra el DC.
+**Kerberos** → autentica.
+**LDAP** → consulta Active Directory.
+**GPO** → configura usuarios/equipos.
+**SMB/NTFS** → controla acceso a recursos.
+
+### Cadena mental:
+
+**Dominio → DNS → DC → Kerberos → LDAP → GPO → SMB/NTFS**
+
+
+<img width="1448" height="1086" alt="c590b3a4-1bb9-4e17-afb9-665574a0cc71" src="https://github.com/user-attachments/assets/386ab288-9f62-4e28-9adb-d3b1d7647d6d" />
+
+Imagina una empresa nueva llamada **NovaTech** con 80 empleados. Hasta ahora cada PC tenía usuarios locales y era un caos: cada ordenador con sus propias cuentas, contraseñas y permisos. Instalan un Windows Server, añaden **AD DS** y lo promueven a controlador de dominio. Al crear el dominio deciden llamarlo **`corp.novatech.com`**. Ese nombre no es porque tengan una web, sino porque quieren que **todo el entorno interno de Active Directory tenga un nombre único y ordenado**.
+
+A partir de ahí crean usuarios como `ana@corp.novatech.com`, `carlos@corp.novatech.com` y grupos como `Finanzas`, `RRHH` o `IT`. También configuran los PCs para usar como DNS interno, por ejemplo, `192.168.10.10`, que es el propio DC. Cuando Ana enciende su ordenador e inicia sesión, el PC sabe que pertenece al dominio `corp.novatech.com`. Primero pregunta al DNS interno: **“¿qué controlador de dominio atiende `corp.novatech.com`?”**. El DNS responde, por ejemplo, `dc01.corp.novatech.com`. Entonces el PC ya habla con ese DC por Kerberos para autenticarse.
+
+Después, si Ana abre una carpeta compartida `\\fileserver\finanzas`, el servidor SMB puede comprobar que Ana pertenece al grupo `Finanzas` de Active Directory y permitirle acceso. Aquí `corp.novatech.com` sirve como **identidad común de todo el dominio**: usuarios, equipos, DCs y servicios saben que pertenecen al mismo entorno.
+
+Lo importante es esto: **`corp` no hace magia**. Podrían haber llamado al dominio `ad.novatech.com` o `empresa.local`. `corp.novatech.com` simplemente es el nombre DNS que eligieron para identificar ese dominio interno de Active Directory y organizarlo de forma limpia.
+
+El escenario completo sería:
+
+**NovaTech instala AD → crea dominio `corp.novatech.com` → crea usuarios/grupos → PCs se unen al dominio → DNS interno localiza el DC → Kerberos autentica → LDAP consulta usuarios/grupos → SMB/NTFS usa esos grupos para dar permisos.**
+
+
+<img width="1122" height="1402" alt="ChatGPT Image 25 ago 2026, 00_15_29" src="https://github.com/user-attachments/assets/cd8ad2f9-5b71-416e-86e4-7c7d61359693" />
