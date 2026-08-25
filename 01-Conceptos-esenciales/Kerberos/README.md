@@ -56,6 +56,21 @@ sequenceDiagram
     SERV-->>PC: ✅ Acceso si los permisos lo permiten
     Note left of SERV: El ticket demuestra quién es el usuario.<br/>Después el servicio comprueba<br/>si ese usuario tiene permisos.
 ```
+La idea importante es esta:
+
+**TGT + SPN del servicio → Kerberos/KDC → Service Ticket → servicio final**
+
+Ejemplos:
+
+**TGT + `cifs/FILESERVER` → ticket para SMB de FILESERVER**
+**TGT + `ldap/DC01` → ticket para LDAP de DC01**
+**TGT + `HTTP/intranet.empresa.com` → ticket para esa web**
+
+En resumen: **el TGT se usa con Kerberos para pedir un ticket específico, y ese Service Ticket se presenta después al servicio concreto usando su propio protocolo: SMB, LDAP, HTTP, etc.**
+
+
+---
+
 
 ### AS-REQ / AS-REP
 
