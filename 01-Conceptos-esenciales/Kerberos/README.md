@@ -28,15 +28,33 @@ El KDC se ejecuta en el Domain Controller y tiene dos funciones lógicas: **Auth
 
 ```mermaid
 sequenceDiagram
-    participant C as Cliente
-    participant K as KDC
-    participant S as Servicio
-    C->>K: AS-REQ: solicito un TGT
-    K-->>C: AS-REP: TGT + clave de sesión
-    C->>K: TGS-REQ: TGT + SPN deseado
-    K-->>C: TGS-REP: ticket de servicio
-    C->>S: AP-REQ: presento el ticket
-    S-->>C: Acceso según permisos
+    participant PC as 💻 Cliente / Host
+    participant KDC as 🏢 Controlador de Dominio / KDC
+    participant SERV as 🖥️ Servicio final (SMB, web, etc.)
+
+    Note over PC,KDC: 1️⃣ AUTENTICACIÓN INICIAL
+
+    PC->>KDC: AS-REQ: "Soy este usuario y quiero autenticarme"
+    Note right of PC: El PC utiliza las credenciales del usuario<br/>para demostrar que conoce la contraseña.<br/>La contraseña no se manda en texto plano.
+
+    KDC-->>PC: AS-REP: TGT + clave de sesión
+    Note left of KDC: El KDC comprueba al usuario.<br/>Si todo es correcto, entrega un TGT.<br/><br/>🎫 TGT = "Ya has sido autenticado"
+
+    Note over PC,KDC: 2️⃣ QUIERO ACCEDER A UN SERVICIO CONCRETO
+
+    PC->>KDC: TGS-REQ: TGT + "Quiero acceder a SMB de FILESERVER"
+    Note right of PC: El cliente presenta su TGT<br/>y especifica qué servicio quiere utilizar.<br/><br/>Ejemplo: SMB / FILESERVER
+
+    KDC-->>PC: TGS-REP: Ticket específico para ese servicio
+    Note left of KDC: El KDC comprueba que el TGT sigue siendo válido<br/>y crea un ticket únicamente para<br/>ese servicio/destinatario.
+
+    Note over PC,SERV: 3️⃣ ACCESO AL SERVICIO
+
+    PC->>SERV: AP-REQ: "Aquí tienes mi ticket para este servicio"
+    Note right of PC: El cliente YA NO envía el TGT.<br/>Presenta el ticket específico<br/>que le entregó el KDC.
+
+    SERV-->>PC: ✅ Acceso si los permisos lo permiten
+    Note left of SERV: El ticket demuestra quién es el usuario.<br/>Después el servicio comprueba<br/>si ese usuario tiene permisos.
 ```
 
 ### AS-REQ / AS-REP
