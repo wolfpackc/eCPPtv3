@@ -1,5 +1,33 @@
 # Kerberoasting
 
+**Kerberoasting** es parecido en espíritu al AS-REP Roasting, pero ataca otra parte del flujo.
+
+Aquí **sí necesitas una cuenta válida del dominio** para empezar. Con tu **TGT**, le pides al KDC un **Service Ticket** para un servicio concreto, por ejemplo:
+
+**TGT + `cifs/FILESERVER` → KDC → Service Ticket**
+
+La clave está en que parte de ese Service Ticket está cifrada con una clave derivada de la **contraseña de la cuenta que ejecuta ese servicio**. Entonces el atacante se lleva ese ticket y prueba contraseñas **offline** hasta encontrar una que encaje.
+
+La idea mental es:
+
+**AS-REP Roasting**
+→ cuenta sin preautenticación
+→ obtengo material cifrado del AS-REP
+→ intento recuperar la contraseña del usuario
+
+**Kerberoasting**
+→ ya tengo una cuenta válida
+→ pido un Service Ticket para un SPN
+→ me llevo ese ticket
+→ intento recuperar la contraseña de la cuenta de servicio
+
+La frase para memorizarlo:
+
+**Kerberoasting = pedir legítimamente un ticket de servicio y usarlo como material para intentar crackear offline la contraseña de la cuenta que presta ese servicio.**
+
+---
+
+
 ## Idea esencial
 
 Un usuario autenticado puede solicitar un ticket para un servicio cuyo SPN conoce. Parte de ese TGS está cifrada con una clave vinculada a la contraseña de la cuenta que ejecuta el servicio. El ticket puede auditarse offline.
