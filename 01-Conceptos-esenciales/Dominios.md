@@ -2,6 +2,8 @@ Cuando un equipo del dominio necesita hacer algo con Active Directory, por ejemp
 
 Una vez obtenida la IP del controlador de dominio, el DNS ya deja de intervenir en esa comunicación concreta. A partir de ahí, el ordenador habla directamente con el DC y le envía las peticiones correspondientes: paquetes Kerberos si quiere autenticarse con Kerberos, consultas LDAP si quiere obtener información del directorio, o el mecanismo correspondiente si interviene NTLM. La idea mental sería: **PC → DNS interno para localizar un DC que ofrezca el servicio necesario → obtiene su IP → PC habla directamente con el DC.**
 
+# Podemos entenderlo así: cualquier **host o servicio que forme parte del entorno de Active Directory** —un PC de usuario, un servidor SMB, una aplicación interna, etc.— cuando necesita autenticarse, consultar usuarios o grupos, aplicar políticas o acceder a información del dominio, primero necesita saber **con qué controlador de dominio debe comunicarse**. Para localizarlo, normalmente consulta al **DNS interno**, que actúa como punto de localización: el host pregunta qué DC ofrece los servicios necesarios para ese dominio, por ejemplo Kerberos o LDAP, y el DNS le devuelve el nombre o la IP de un controlador de dominio adecuado. A partir de ahí, el host ya se comunica directamente con ese DC mediante el protocolo correspondiente. Por tanto, la idea mental es: **host o servicio → DNS interno para localizar el DC adecuado → comunicación directa con el controlador de dominio → autenticación, consultas de usuarios/grupos u otras operaciones de Active Directory**.
+
 
 # ACTIVE DIRECTORY + DOMINIO + DNS
 
