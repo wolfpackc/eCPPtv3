@@ -62,6 +62,7 @@ Para eCPPT es más importante comprender TGT/TGS y reutilización de tickets que
 - ticket válido para otro servicio;
 - identidad autenticada pero sin autorización;
 - DNS resolviendo el host equivocado.
+<img width="1122" height="1402" alt="ChatGPT Image 26 ago 2026, 12_05_12" src="https://github.com/user-attachments/assets/f945b41f-f31d-4832-8d2e-c35bc0a0a388" />
 
 ## Mitigación
 
