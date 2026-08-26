@@ -1,4 +1,4 @@
-<img width="7271" height="8192" alt="Kerberos Authentication Flow-2026-08-26-102811" src="https://github.com/user-attachments/assets/6ec42bfd-13e3-4c80-83cf-f1e466c325bc" />
+<img width="5368" height="8192" alt="Kerberos Authentication Flow-2026-08-26-110250" src="https://github.com/user-attachments/assets/27240056-ef12-4d52-ae53-f23de5575f5b" />
 
 
 
