@@ -1,3 +1,5 @@
+# ¿qué cojones es post-explotacion??
+Post-exploitation empieza cuando ya has conseguido acceso a un sistema o identidad útil y ahora intentas sacar más valor de esa posición. No empieza necesariamente justo al encontrar una cuenta de servicio, sino cuando esa cuenta/credencial ya te permite entrar o interactuar con un host/servicio y desde ahí quieres ampliar acceso, privilegios o información.
 # 04. Exploitation & Post-Exploitation — 25 %
 
 ## Objetivos oficiales cubiertos
