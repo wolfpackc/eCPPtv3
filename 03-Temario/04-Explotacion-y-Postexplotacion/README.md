@@ -1,5 +1,16 @@
 # ¿qué cojones es post-explotacion??
 Post-exploitation empieza cuando ya has conseguido acceso a un sistema o identidad útil y ahora intentas sacar más valor de esa posición. No empieza necesariamente justo al encontrar una cuenta de servicio, sino cuando esa cuenta/credencial ya te permite entrar o interactuar con un host/servicio y desde ahí quieres ampliar acceso, privilegios o información.
+
+
+Un matiz importante: Kerberoasting y AS-REP Roasting suelen considerarse más “credential access / privilege escalation / AD attack techniques” que post-exploitation pura, porque muchas veces los haces antes de tener acceso administrativo a una máquina.
+
+En cambio, si con sqlsvc entras en SQL01, descubres credenciales en una configuración, ves que otra cuenta tiene sesión abierta, extraes un ticket Kerberos o descubres que puedes saltar a FILES01, eso sí es post-exploitation de manual.
+
+La frase más simple sería:
+
+Acceso inicial = consigo entrar.
+Post-exploitation = ya estoy dentro y ahora intento convertir ese acceso en algo más valioso.
+
 # 04. Exploitation & Post-Exploitation — 25 %
 
 ## Objetivos oficiales cubiertos
