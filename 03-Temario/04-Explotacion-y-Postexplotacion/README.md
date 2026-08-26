@@ -2,6 +2,9 @@
 Post-exploitation empieza cuando ya has conseguido acceso a un sistema o identidad útil y ahora intentas sacar más valor de esa posición. No empieza necesariamente justo al encontrar una cuenta de servicio, sino cuando esa cuenta/credencial ya te permite entrar o interactuar con un host/servicio y desde ahí quieres ampliar acceso, privilegios o información.
 
 
+<img width="1448" height="1086" alt="ChatGPT Image 26 ago 2026, 17_31_32" src="https://github.com/user-attachments/assets/cf2f7466-8faf-4f7e-9185-fa9846b97d50" />
+
+
 Un matiz importante: Kerberoasting y AS-REP Roasting suelen considerarse más “credential access / privilege escalation / AD attack techniques” que post-exploitation pura, porque muchas veces los haces antes de tener acceso administrativo a una máquina.
 
 En cambio, si con sqlsvc entras en SQL01, descubres credenciales en una configuración, ves que otra cuenta tiene sesión abierta, extraes un ticket Kerberos o descubres que puedes saltar a FILES01, eso sí es post-exploitation de manual.
