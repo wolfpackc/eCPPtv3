@@ -236,3 +236,60 @@ Para eCPPT y para aprender Red Team, la idea que merece la pena memorizar es:
 
 El “malware/C2/exfiltración real” sería ya una capa posterior sobre esos mismos mecanismos.
 
+---
+
+
+Sí. Te lo haría así, manteniendo justo esa lógica y dejando claro que cuando una vía falla, **pasas a otra**, no que el ataque termine.
+
+```mermaid
+flowchart TD
+
+    A["YA TENEMOS USUARIO + CONTRASEÑA VÁLIDOS"]:::good
+
+    A --> B{"¿KERBEROASTING ES VIABLE?<br/>¿Aparecen cuentas con SPN útiles?"}:::decision
+
+    B -->|"Sí"| C["Solicitar TGS<br/>Intentar crackear<br/>cuentas de servicio"]:::kerb
+
+    C --> D{"¿Obtenemos NUEVAS credenciales?"}:::decision
+
+    D -->|"Sí"| E["Probar nueva identidad<br/>contra servicios y hosts"]:::good
+    D -->|"No"| F["Esa ruta no da más credenciales"]:::failed
+
+    B -->|"No"| F
+
+    F --> G["USAR LAS CREDENCIALES<br/>QUE YA TENEMOS"]:::good
+
+    G --> H["NXC<br/>Probar autenticación en:<br/>SMB / WinRM / MSSQL / LDAP / RDP / SSH"]:::nxc
+
+    H --> I{"¿FUNCIONAN EN ALGÚN SERVICIO?"}:::decision
+
+    I -->|"Sí, usuario normal"| J["Acceso válido<br/>Permisos limitados"]:::normal
+
+    I -->|"Sí, admin / PWN3D!"| K["Acceso privilegiado<br/>Post-explotación"]:::pwned
+
+    I -->|"No"| L["NO TENEMOS ACCESO DIRECTO<br/>A LOS SERVICIOS"]:::failed
+
+    L --> M["CAMBIAR DE VECTOR<br/>Y SEGUIR ENUMERANDO"]:::next
+
+    M --> N["LDAP / BloodHound<br/>Grupos / ACLs / GPOs<br/>Delegación / Trusts<br/>LAPS / AD CS<br/>Shares / sesiones<br/>Web / otros servicios<br/>Reutilización de credenciales"]:::enum
+
+    N --> O{"¿APARECE UNA NUEVA RUTA?"}:::decision
+
+    O -->|"Sí"| P["Nueva posibilidad de acceso<br/>o escalada"]:::good
+    O -->|"No"| Q["Esa línea de ataque se agota<br/>→ buscar otra superficie"]:::failed
+
+    classDef good fill:#123524,stroke:#35d07f,color:#fff,stroke-width:3px;
+    classDef decision fill:#2b2140,stroke:#b084ff,color:#fff,stroke-width:3px;
+    classDef kerb fill:#3a2d00,stroke:#ffc107,color:#fff,stroke-width:3px;
+    classDef failed fill:#3b0d0d,stroke:#ff4d4d,color:#fff,stroke-width:3px;
+    classDef nxc fill:#071f2b,stroke:#00d4ff,color:#fff,stroke-width:4px;
+    classDef normal fill:#3a2d00,stroke:#ffc107,color:#fff,stroke-width:3px;
+    classDef pwned fill:#123524,stroke:#00ff88,color:#fff,stroke-width:4px;
+    classDef next fill:#0b3d4d,stroke:#00d4ff,color:#fff,stroke-width:3px;
+    classDef enum fill:#252525,stroke:#5ea9ff,color:#fff,stroke-width:2px;
+```
+
+La idea central sería:
+
+> **Kerberoasting falla → probamos la cuenta que ya tenemos → NXC no da acceso → no nos rendimos: volvemos a enumeración de AD y buscamos otra ruta.**
+
