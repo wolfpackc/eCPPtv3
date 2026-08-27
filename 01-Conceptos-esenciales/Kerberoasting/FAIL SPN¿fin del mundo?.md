@@ -1,3 +1,4 @@
+```mermaid
 flowchart TD
 
     A["RED CORPORATIVA / ACTIVE DIRECTORY"]:::start
@@ -119,6 +120,7 @@ flowchart TD
     classDef postaction fill:#1f2933,stroke:#8ab4f8,color:#ffffff,stroke-width:2px;
     classDef move fill:#42275a,stroke:#cf8cff,color:#ffffff,stroke-width:3px;
     classDef critical fill:#420000,stroke:#ff1744,color:#ffffff,stroke-width:4px;
+```
 ```mermaid
 flowchart TD
 
