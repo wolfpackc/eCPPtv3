@@ -1,4 +1,124 @@
+flowchart TD
 
+    A["RED CORPORATIVA / ACTIVE DIRECTORY"]:::start
+
+    A --> B["RECONOCIMIENTO INICIAL<br/><br/>Hosts / Puertos / Servicios / DC / DNS<br/>Nmap / NetExec / LDAP / SMB"]:::recon
+
+    B --> C{"¿TENEMOS CREDENCIALES?"}:::decision
+
+    C -->|"No"| D["BUSCAR CREDENCIALES / ACCESO INICIAL"]:::attack
+
+    D --> D1["AS-REP ROASTING<br/><br/>Usuario conocido + Preauth deshabilitada<br/>→ AS-REP crackeable"]:::kerb
+    D --> D2["Password Spraying<br/>Reutilización de contraseñas<br/>Credenciales filtradas / configuración débil"]:::attack
+    D --> D3["Web / servicios expuestos<br/>Vulnerabilidades / malas configuraciones"]:::attack
+
+    D1 --> E["USUARIO + CONTRASEÑA VÁLIDOS"]:::good
+    D2 --> E
+    D3 --> E
+
+    C -->|"Sí"| E
+
+    E --> F["ENUMERAR ACTIVE DIRECTORY<br/><br/>Usuarios / Grupos / Equipos / SPN<br/>Shares / GPO / ACL / Delegación<br/>Trusts / AD CS / LAPS"]:::enum
+
+    F --> G{"¿HAY CUENTAS CON SPN<br/>INTERESANTES PARA KERBEROASTING?"}:::decision
+
+    G -->|"Sí"| H["KERBEROASTING<br/><br/>Solicitar TGS<br/>Cracking offline"]:::kerb
+
+    H --> I{"¿NUEVA CREDENCIAL?"}:::decision
+
+    I -->|"Sí"| J["TENEMOS MÁS IDENTIDADES<br/><br/>usuario inicial<br/>+ cuentas de servicio recuperadas"]:::good
+
+    I -->|"No"| K["KERBEROASTING NO DA FRUTOS"]:::failed
+    G -->|"No"| K
+
+    K --> L["SEGUIMOS TENIENDO<br/>LA IDENTIDAD INICIAL"]:::good
+
+    J --> M
+    L --> M
+
+    M["PROBAR DÓNDE FUNCIONAN<br/>LAS CREDENCIALES<br/><br/>NetExec / clientes específicos"]:::nxc
+
+    M --> SMB["SMB"]:::service
+    M --> WINRM["WinRM"]:::service
+    M --> MSSQL["MSSQL"]:::service
+    M --> LDAP["LDAP"]:::service
+    M --> RDP["RDP"]:::service
+    M --> SSH["SSH"]:::service
+
+    SMB --> N
+    WINRM --> N
+    MSSQL --> N
+    LDAP --> N
+    RDP --> N
+    SSH --> N
+
+    N{"¿CONSEGUIMOS ACCESO ÚTIL?"}:::decision
+
+    N -->|"No"| O["CAMBIAR DE VECTOR<br/><br/>Seguir enumerando AD"]:::failed
+
+    O --> O1["ACL / GPO<br/>Delegación<br/>AD CS<br/>Trusts<br/>LAPS<br/>Shares<br/>Password Spraying<br/>Web / vulnerabilidades"]:::enum
+
+    O1 --> F
+
+    N -->|"Usuario normal"| P["ACCESO LIMITADO"]:::normal
+    N -->|"Admin / PWN3D"| Q["ACCESO PRIVILEGIADO"]:::pwned
+
+    P --> R
+    Q --> R
+
+    R["POST-EXPLOTACIÓN"]:::post
+
+    R --> R1["DISCOVERY<br/><br/>Sistema / usuarios / grupos<br/>procesos / servicios / red<br/>interfaces / rutas / sesiones"]:::postaction
+
+    R --> R2["CREDENTIAL ACCESS<br/><br/>Credenciales / hashes / tickets<br/>secretos / configuraciones"]:::postaction
+
+    R --> R3["COLLECTION<br/><br/>Shares / archivos interesantes<br/>configuraciones / backups"]:::postaction
+
+    R --> R4["AUTOMATIZACIÓN<br/><br/>Scripts / herramientas<br/>recopilación estructurada<br/>resultados centralizados"]:::postaction
+
+    R1 --> S
+    R2 --> S
+    R3 --> S
+    R4 --> S
+
+    S{"¿APARECE UNA NUEVA RUTA?"}:::decision
+
+    S -->|"Privesc"| T["ESCALADA DE PRIVILEGIOS"]:::move
+    S -->|"Otro host"| U["MOVIMIENTO LATERAL"]:::move
+    S -->|"Otra red"| V["PIVOTING"]:::move
+    S -->|"Nueva credencial"| J
+
+    T --> R
+    U --> R
+    V --> R
+
+    R --> W{"¿LLEGAMOS A PRIVILEGIOS<br/>DE DOMINIO?"}:::decision
+
+    W -->|"No"| S
+
+    W -->|"Sí"| X["COMPROMISO DEL DOMINIO"]:::critical
+
+    X --> X1["DCSync / NTDS<br/>material de credenciales"]:::critical
+    X --> X2["KRBTGT key/hash<br/>→ Golden Ticket"]:::critical
+    X --> X3["Clave de servicio/equipo<br/>→ Silver Ticket"]:::critical
+    X --> X4["ACL / GPO / grupos<br/>control del dominio"]:::critical
+
+    classDef start fill:#111111,stroke:#ffffff,color:#ffffff,stroke-width:4px;
+    classDef recon fill:#252525,stroke:#aaaaaa,color:#ffffff,stroke-width:2px;
+    classDef decision fill:#2b2140,stroke:#b084ff,color:#ffffff,stroke-width:3px;
+    classDef attack fill:#3a2d00,stroke:#ffc107,color:#ffffff,stroke-width:2px;
+    classDef kerb fill:#402500,stroke:#ff9800,color:#ffffff,stroke-width:3px;
+    classDef good fill:#123524,stroke:#35d07f,color:#ffffff,stroke-width:3px;
+    classDef enum fill:#13293d,stroke:#3ca0ff,color:#ffffff,stroke-width:3px;
+    classDef nxc fill:#071f2b,stroke:#00d4ff,color:#ffffff,stroke-width:4px;
+    classDef service fill:#252525,stroke:#5ea9ff,color:#ffffff,stroke-width:2px;
+    classDef failed fill:#3b0d0d,stroke:#ff4d4d,color:#ffffff,stroke-width:3px;
+    classDef normal fill:#3a2d00,stroke:#ffc107,color:#ffffff,stroke-width:3px;
+    classDef pwned fill:#123524,stroke:#00ff88,color:#ffffff,stroke-width:4px;
+    classDef post fill:#0b3d4d,stroke:#00d4ff,color:#ffffff,stroke-width:4px;
+    classDef postaction fill:#1f2933,stroke:#8ab4f8,color:#ffffff,stroke-width:2px;
+    classDef move fill:#42275a,stroke:#cf8cff,color:#ffffff,stroke-width:3px;
+    classDef critical fill:#420000,stroke:#ff1744,color:#ffffff,stroke-width:4px;
 ```mermaid
 flowchart TD
 
