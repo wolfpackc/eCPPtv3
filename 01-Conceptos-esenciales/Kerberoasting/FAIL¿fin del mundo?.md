@@ -41,3 +41,71 @@ flowchart TD
 La idea visual queda así: **intentamos Kerberoasting → esa puerta no da frutos → la rama se pone roja/negra → volvemos a nuestra posición inicial fuerte: seguimos teniendo una identidad válida del dominio**.
 
 El siguiente bloque natural del diagrama sería precisamente abrir desde `¿QUÉ PUEDO HACER CON JAIME?` hacia **SMB, SQL, WinRM, shares, LDAP, hosts y permisos reales**.
+
+
+
+```mermaid
+flowchart TD
+
+    A["KERBEROASTING FALLIDO<br/><br/>No conseguimos nuevas credenciales"]:::failed
+
+    A --> B{"¿Qué hacemos ahora?"}:::decision
+
+    B -->|"Opción 1"| C["RENDIRNOS 😭"]:::dead
+
+    B -->|"Opción 2"| D["USAR LAS CREDENCIALES<br/>QUE YA TENEMOS<br/><br/>EMPRESA\\jaime<br/>+ contraseña válida"]:::good
+
+    D --> E["DESCUBRIR HOSTS Y SERVICIOS<br/><br/>Nmap / enumeración de red"]:::recon
+
+    E --> F["PROBAR DÓNDE FUNCIONAN<br/>LAS CREDENCIALES"]:::action
+
+    F --> G["NXC<br/><br/>nxc &lt;protocolo&gt; &lt;IP / rango / lista&gt;<br/>-u jaime -p contraseña"]:::nxc
+
+    G --> SMB["SMB<br/>445"]:::service
+    G --> WINRM["WinRM<br/>5985 / 5986"]:::service
+    G --> MSSQL["MSSQL<br/>1433"]:::service
+    G --> LDAP["LDAP<br/>389 / 636"]:::service
+    G --> RDP["RDP<br/>3389"]:::service
+    G --> SSH["SSH<br/>22"]:::service
+    G --> WMI["WMI"]:::service
+
+    SMB --> R
+    WINRM --> R
+    MSSQL --> R
+    LDAP --> R
+    RDP --> R
+    SSH --> R
+    WMI --> R
+
+    R{"RESULTADO DE LA PRUEBA"}:::decision
+
+    R --> NO["NI DE PUTA COÑA ❌<br/><br/>No autentica / acceso denegado"]:::failed
+
+    R --> USER["SÍ ✅<br/><br/>Credenciales válidas<br/>pero permisos normales o limitados"]:::normal
+
+    R --> ADMIN["PWN3D! 🔥<br/><br/>Autentica y además<br/>tenemos privilegios elevados"]:::pwned
+
+    USER --> NEXT1["ENUMERAR QUÉ PUEDE HACER<br/>ESA IDENTIDAD"]:::next
+    ADMIN --> NEXT2["POST-EXPLOTACIÓN<br/><br/>Enumerar host, sesiones,<br/>credenciales, tickets y rutas"]:::next
+
+    classDef failed fill:#3b0d0d,stroke:#ff4d4d,color:#ffffff,stroke-width:3px;
+    classDef dead fill:#111111,stroke:#ff0000,color:#ffffff,stroke-width:4px;
+    classDef decision fill:#2b2140,stroke:#b084ff,color:#ffffff,stroke-width:3px;
+    classDef good fill:#123524,stroke:#35d07f,color:#ffffff,stroke-width:3px;
+    classDef recon fill:#2c2c2c,stroke:#aaaaaa,color:#ffffff,stroke-width:2px;
+    classDef action fill:#13293d,stroke:#3ca0ff,color:#ffffff,stroke-width:3px;
+    classDef nxc fill:#071f2b,stroke:#00d4ff,color:#ffffff,stroke-width:4px;
+    classDef service fill:#252525,stroke:#5ea9ff,color:#ffffff,stroke-width:2px;
+    classDef normal fill:#3a2d00,stroke:#ffc107,color:#ffffff,stroke-width:3px;
+    classDef pwned fill:#123524,stroke:#00ff88,color:#ffffff,stroke-width:4px;
+    classDef next fill:#0b3d4d,stroke:#00d4ff,color:#ffffff,stroke-width:3px;
+```
+
+Así queda mucho más claro visualmente:
+
+**NXC → muchos servicios → un único punto de decisión → 3 resultados posibles.**
+
+Y además te deja preparado el siguiente bloque: qué hacer cuando **autentica pero no eres admin** frente a qué hacer cuando sale **PWN3D!**.
+1. Sí puedes pasar rangos a NXC. Por ejemplo, conceptualmente 10.10.10.0/24, una IP concreta o una lista de objetivos. Pero para estudiar metodología, tiene más sentido primero descubrir servicios con Nmap y después probar solo donde corresponda, porque lanzar credenciales contra todo el rango y todos los protocolos es más ruidoso.
+
+2. Pwn3d! no significa exactamente lo mismo en todos los protocolos. NetExec lo usa como indicador de que ha detectado capacidad relevante de ejecución o privilegios altos; en SMB suele apuntar a administrador local, mientras que WinRM, RDP, LDAP, etc. tienen criterios distintos. La propia documentación de NetExec advierte de esa diferencia.
