@@ -17,3 +17,4 @@
 > **Credenciales → comprobar dónde autentican → comprobar permisos → conseguir acceso real → enumeración/post-explotación → recopilar información útil → buscar credenciales o nuevas rutas → movimiento lateral/pivoting → repetir.**
 
 
+[ElevenLabs_2026-08-27T11_27_54_Liam - Energetic, Social Media Creator_pre_sp100_s50_sb75_v3.mp3](https://github.com/user-attachments/files/31512679/ElevenLabs_2026-08-27T11_27_54_Liam.-.Energetic.Social.Media.Creator_pre_sp100_s50_sb75_v3.mp3)
