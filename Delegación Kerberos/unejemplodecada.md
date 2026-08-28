@@ -2,6 +2,13 @@
 
 ## 1. Unconstrained Delegation — «confío muchísimo en WEB01»
 
+| Tipo                         | Idea para memorizar                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Unconstrained Delegation** | El servidor puede representar al usuario de forma **muy amplia** frente a otros servicios.             |
+| **Constrained Delegation**   | El servidor puede representar al usuario **solo frente a servicios concretos** previamente permitidos. |
+| **RBCD**                     | Es el **servidor destino** quien decide qué otro servidor puede representar usuarios frente a él.      |
+
+
 Eduardo se autentica en una aplicación de `WEB01`. Esa aplicación necesita acceder a otros recursos en nombre de Eduardo.
 
 ```mermaid
