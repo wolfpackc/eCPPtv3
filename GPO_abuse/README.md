@@ -1,167 +1,196 @@
-Sí. **GPO Abuse** es mucho más fácil si piensas en una GPO como un **“mando a distancia centralizado” de Windows**.
+Sí. La estructura mental correcta sería esta, con una corrección importante: **una OU no es un grupo**. Se parece en que “contiene cosas”, pero su función es organizar objetos de AD y servir, entre otras cosas, como ámbito para aplicar GPOs.
 
-### ¿Qué es una GPO?
+```mermaid
+flowchart TD
 
-Una **Group Policy Object** contiene configuraciones que Active Directory puede aplicar automáticamente a usuarios y ordenadores.
+    AD["🏢 ACTIVE DIRECTORY<br/>empresa.local"]
 
-Por ejemplo:
+    AD --> USERS["👤 Usuarios"]
+    AD --> GROUPS["👥 Grupos"]
+    AD --> COMPUTERS["💻 Equipos"]
+    AD --> OUS["📁 Unidades Organizativas (OU)"]
+    AD --> GPOS["📜 GPOs"]
 
-```text
-GPO: "Política Servidores"
+    USERS --> U1["Eduardo"]
+    USERS --> U2["Ana"]
+    USERS --> U3["Carlos"]
 
-→ desactivar una función
-→ configurar Firewall
-→ ejecutar scripts
-→ configurar servicios
-→ definir grupos locales
-→ aplicar configuraciones de seguridad
+    GROUPS --> G1["HelpDesk"]
+    GROUPS --> G2["Developers"]
+    GROUPS --> G3["Server-Admins"]
+
+    U1 -->|"MemberOf"| G1
+    U1 -->|"MemberOf"| G2
+    U2 -->|"MemberOf"| G3
+
+    OUS --> OU1["📁 OU Usuarios"]
+    OUS --> OU2["📁 OU Workstations"]
+    OUS --> OU3["📁 OU Servidores"]
+
+    OU1 --> OU1A["👤 Eduardo"]
+    OU1 --> OU1B["👤 Ana"]
+
+    OU2 --> PC1["💻 PC01"]
+    OU2 --> PC2["💻 PC02"]
+
+    OU3 --> SRV1["🖥️ FILE01"]
+    OU3 --> SRV2["🖥️ SQL01"]
+
+    GPOS --> GP1["📜 GPO-Workstations"]
+    GPOS --> GP2["📜 GPO-Servidores"]
+
+    GP1 -->|"Linked to"| OU2
+    GP2 -->|"Linked to"| OU3
 ```
 
-La GPO normalmente está vinculada a un ámbito como una **OU**.
+La idea sería:
+
+```text
+USUARIOS
+→ Eduardo
+→ Ana
+→ Carlos
+
+GRUPOS
+→ HelpDesk
+→ Developers
+→ Server-Admins
+
+Eduardo
+→ puede pertenecer a HelpDesk y Developers
+
+OU
+→ organiza objetos
+→ puede contener usuarios
+→ puede contener equipos
+→ puede contener otras OUs
+→ también puede contener grupos
+```
+
+Pero lo más importante:
+
+> **Pertenecer a un grupo y estar dentro de una OU son cosas completamente distintas.**
+
+Ejemplo:
+
+```text
+Eduardo
+├─ MemberOf → HelpDesk
+└─ ubicado en → OU Usuarios
+```
+
+`HelpDesk` te dice **qué membresías/permisos puede heredar Eduardo**.
+
+`OU Usuarios` te dice **dónde está organizado el objeto Eduardo dentro de AD**.
+
+### Y las GPO
+
+Aquí lo has entendido prácticamente bien.
+
+Una GPO normalmente se **vincula** a:
+
+```text
+Site
+Domain
+OU
+```
+
+No directamente a:
+
+```text
+Usuario individual
+Grupo individual
+```
+
+Ejemplo:
 
 ```mermaid
 flowchart LR
 
-    GPO["📜 GPO<br/>Politica-Servidores"]
+    GPO["📜 GPO-Servidores<br/>Firewall + Configuración + Scripts"]
+
     OU["📁 OU Servidores"]
 
     SQL["🖥️ SQL01"]
     FILE["🖥️ FILE01"]
     WEB["🖥️ WEB01"]
 
-    GPO -->|"aplicada a"| OU
+    GPO -->|"se vincula a"| OU
 
     OU --> SQL
     OU --> FILE
     OU --> WEB
 ```
 
-Eso significa que una única configuración puede afectar a **muchas máquinas de golpe**.
-
----
-
-## ¿Qué es GPO Abuse?
-
-Ahora imagina que BloodHound descubre:
+Así que:
 
 ```text
-Eduardo
-   ↓
-GenericAll / WriteDacl / algún permiso de modificación
-   ↓
 GPO-Servidores
-```
-
-Eso significa conceptualmente:
-
-> **Eduardo puede modificar una política que afecta a otros equipos.**
-
-Y ahí aparece el abuso.
-
-```mermaid
-flowchart LR
-
-    EDU["👤 Eduardo"]
-
-    GPO["📜 GPO-Servidores"]
-
-    OU["📁 OU Servidores"]
-
-    SQL["🖥️ SQL01"]
-    FILE["🖥️ FILE01"]
-    WEB["🖥️ WEB01"]
-
-    EDU -->|"puede modificar"| GPO
-
-    GPO -->|"aplicada a"| OU
-
-    OU --> SQL
-    OU --> FILE
-    OU --> WEB
-```
-
-Lo importante es que Eduardo **no necesita ser administrador directamente de SQL01, FILE01 y WEB01**.
-
-Puede existir una ruta:
-
-```text
-Eduardo
-   ↓
-controla GPO
-   ↓
-GPO afecta a OU Servidores
-   ↓
+        ↓
+OU Servidores
+        ↓
 SQL01
 FILE01
 WEB01
 ```
 
----
+Los **equipos que están dentro de esa OU** reciben la configuración de equipo de esa GPO, siempre que se cumplan las condiciones de aplicación.
 
-## ¿Qué podría conseguir alguien controlando una GPO?
-
-Dependiendo de la política y del ámbito, potencialmente podría provocar cambios como:
+Y para usuarios igual:
 
 ```text
-añadir una cuenta a un grupo local privilegiado
-
-ejecutar un script en los equipos
-
-crear/configurar tareas
-
-modificar configuraciones de seguridad
-
-cambiar servicios
-
-aplicar determinadas configuraciones
+GPO-Usuarios
+     ↓
+OU Usuarios
+     ↓
+Eduardo
+Ana
+Carlos
 ```
 
-Por eso una GPO mal protegida es tan interesante: **un único objeto de Active Directory puede darte influencia sobre decenas o cientos de máquinas**.
+### Un matiz importante sobre los grupos
 
----
+Has dicho:
 
-## Relación con ACL Abuse
+> “Por eso es importante meter los grupos o equipos en las OUs para aplicar GPOs.”
 
-Aquí conecta perfectamente con lo que acabamos de estudiar.
+Los **equipos y usuarios**, sí.
 
-```text
-ACL Abuse
-   ↓
-descubro que tengo permisos
-sobre una GPO
-   ↓
-GPO Abuse
-   ↓
-la GPO afecta a muchos hosts
-```
+Los **grupos**, no exactamente.
 
-Es decir:
+Las GPO no se procesan “sobre un grupo” como si el grupo fuese el objetivo principal. Se procesan sobre **usuarios y equipos**. Lo que sí puedes hacer es utilizar grupos para **filtrar** quién recibe una GPO.
 
-> **ACL Abuse = cómo consigo capacidad de modificar el objeto.**
-> **GPO Abuse = qué puedo conseguir aprovechando el control de una GPO.**
-
-### Chuleta para memorizar
+Por ejemplo:
 
 ```text
 GPO
-→ configuración centralizada de Windows
+ ↓ vinculada a
+OU Servidores
+ ↓
 
-GPO se vincula a
-→ dominio / OU / ámbito determinado
+SQL01
+FILE01
+WEB01
 
-GPO Abuse
-→ puedo modificar una GPO que afecta a otros equipos
+pero:
 
-Pregunta clave:
-¿A QUÉ EQUIPOS/USUARIOS SE APLICA ESTA GPO?
-
-Gran peligro:
-1 GPO comprometida
-→ muchos hosts afectados
+Security Filtering
+→ solo ciertos usuarios/equipos/grupos autorizados
 ```
 
-Y en BloodHound tu pensamiento debería ser:
+Para tu cabeza:
 
-> **“Puedo controlar esta GPO. Vale… ¿a qué OU está vinculada y qué ordenadores hay dentro?”**
+> **OU = dónde coloco los objetos.**
+> **Grupo = qué usuarios/equipos están relacionados por membresía.**
+> **GPO = qué configuración quiero aplicar.**
 
-Esa es prácticamente toda la base conceptual que necesitas antes de empezar a interpretar ejemplos.
+Y:
+
+```text
+GPO
+→ se vincula a una OU
+→ la OU contiene usuarios/equipos
+→ esos usuarios/equipos reciben la política
+```
+
+Ese es el modelo que necesitas para entender después **GPO Abuse**.
