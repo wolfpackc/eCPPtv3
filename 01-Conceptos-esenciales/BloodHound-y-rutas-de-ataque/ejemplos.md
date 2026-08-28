@@ -4,9 +4,14 @@
 ---
 
 # ACL Abuse
+<img width="893" height="401" alt="Captura de pantalla 2026-08-28 121305" src="https://github.com/user-attachments/assets/6aa13fb4-b936-44b8-88f3-92321f8f8ccc" />
+
 
 <img width="4062" height="608" alt="mermaid-diagram (14)" src="https://github.com/user-attachments/assets/23dc11ed-7c02-4313-83e7-28e0e9ce1beb" />
 
 ---
 
 <img width="2470" height="326" alt="mermaid-diagram (15)" src="https://github.com/user-attachments/assets/1ca27b45-172e-4c78-ba8d-65f5e06f603c" />
+
+---
+
