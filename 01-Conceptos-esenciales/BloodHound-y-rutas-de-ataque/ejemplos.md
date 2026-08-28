@@ -15,3 +15,4 @@
 
 ---
 
+<img width="7634" height="729" alt="mermaid-diagram (16)" src="https://github.com/user-attachments/assets/8fabd8ed-cd6c-43c0-afe3-5c70017bc0a1" />
