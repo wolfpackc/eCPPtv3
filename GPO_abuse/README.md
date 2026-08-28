@@ -1,4 +1,12 @@
-Sí. La estructura mental correcta sería esta, con una corrección importante: **una OU no es un grupo**. Se parece en que “contiene cosas”, pero su función es organizar objetos de AD y servir, entre otras cosas, como ámbito para aplicar GPOs.
+# Estructura básica de Active Directory
+
+Active Directory organiza distintos tipos de objetos dentro de un dominio. Los más importantes para entender su estructura son:
+
+* Usuarios
+* Equipos
+* Grupos
+* Unidades Organizativas u OU
+* GPO
 
 ```mermaid
 flowchart TD
@@ -8,27 +16,24 @@ flowchart TD
     AD --> USERS["👤 Usuarios"]
     AD --> GROUPS["👥 Grupos"]
     AD --> COMPUTERS["💻 Equipos"]
-    AD --> OUS["📁 Unidades Organizativas (OU)"]
+    AD --> OUS["📁 Unidades Organizativas"]
     AD --> GPOS["📜 GPOs"]
 
     USERS --> U1["Eduardo"]
     USERS --> U2["Ana"]
-    USERS --> U3["Carlos"]
 
     GROUPS --> G1["HelpDesk"]
     GROUPS --> G2["Developers"]
-    GROUPS --> G3["Server-Admins"]
 
     U1 -->|"MemberOf"| G1
     U1 -->|"MemberOf"| G2
-    U2 -->|"MemberOf"| G3
 
     OUS --> OU1["📁 OU Usuarios"]
     OUS --> OU2["📁 OU Workstations"]
     OUS --> OU3["📁 OU Servidores"]
 
-    OU1 --> OU1A["👤 Eduardo"]
-    OU1 --> OU1B["👤 Ana"]
+    OU1 --> U3["👤 Eduardo"]
+    OU1 --> U4["👤 Ana"]
 
     OU2 --> PC1["💻 PC01"]
     OU2 --> PC2["💻 PC02"]
@@ -43,51 +48,112 @@ flowchart TD
     GP2 -->|"Linked to"| OU3
 ```
 
-La idea sería:
+## Usuarios, equipos y grupos
+
+Los usuarios y los equipos son objetos individuales dentro de Active Directory.
+
+Después existen los **grupos**, que permiten reunir diferentes objetos mediante relaciones de membresía.
+
+Por ejemplo:
 
 ```text
-USUARIOS
-→ Eduardo
-→ Ana
-→ Carlos
-
-GRUPOS
-→ HelpDesk
-→ Developers
-→ Server-Admins
-
 Eduardo
-→ puede pertenecer a HelpDesk y Developers
+├── MemberOf → HelpDesk
+└── MemberOf → Developers
+```
+
+Pertenecer a un grupo no significa necesariamente obtener permisos automáticamente.
+
+Lo que ocurre es que otros recursos pueden conceder permisos al grupo.
+
+Por ejemplo:
+
+```text
+PC01
+→ HelpDesk puede actuar como administrador
+
+FILE01
+→ HelpDesk puede acceder a una carpeta
+```
+
+Si Eduardo pertenece a `HelpDesk`, hereda indirectamente esas capacidades.
+
+---
+
+## Unidades Organizativas
+
+Las **OU** sirven principalmente para organizar los objetos dentro de Active Directory.
+
+Por ejemplo:
+
+```text
+OU Usuarios
+├── Eduardo
+└── Ana
+
+OU Workstations
+├── PC01
+└── PC02
+
+OU Servidores
+├── FILE01
+└── SQL01
+```
+
+Una OU puede contener:
+
+```text
+usuarios
+equipos
+grupos
+otras OUs
+```
+
+Pero una OU no es lo mismo que un grupo.
+
+La diferencia más sencilla es:
+
+```text
+GRUPO
+→ membresía
+→ permisos / roles
 
 OU
-→ organiza objetos
-→ puede contener usuarios
-→ puede contener equipos
-→ puede contener otras OUs
-→ también puede contener grupos
+→ ubicación y organización
+→ administración
+→ ámbito de GPOs
 ```
 
-Pero lo más importante:
-
-> **Pertenecer a un grupo y estar dentro de una OU son cosas completamente distintas.**
-
-Ejemplo:
+Por ejemplo:
 
 ```text
 Eduardo
-├─ MemberOf → HelpDesk
-└─ ubicado en → OU Usuarios
+├── ubicado en → OU Usuarios
+└── MemberOf → HelpDesk
 ```
 
-`HelpDesk` te dice **qué membresías/permisos puede heredar Eduardo**.
+Son dos relaciones completamente diferentes.
 
-`OU Usuarios` te dice **dónde está organizado el objeto Eduardo dentro de AD**.
+---
 
-### Y las GPO
+# GPO
 
-Aquí lo has entendido prácticamente bien.
+Las **Group Policy Objects** son conjuntos de configuraciones centralizadas que Active Directory puede aplicar a usuarios y equipos.
 
-Una GPO normalmente se **vincula** a:
+Una GPO puede configurar, por ejemplo:
+
+```text
+Firewall
+servicios
+scripts
+registro
+fondo de escritorio
+restricciones
+Administrador de tareas
+configuraciones de seguridad
+```
+
+Normalmente se vinculan a:
 
 ```text
 Site
@@ -95,19 +161,14 @@ Domain
 OU
 ```
 
-No directamente a:
-
-```text
-Usuario individual
-Grupo individual
-```
+No se vinculan directamente a un usuario individual o a un grupo como mecanismo normal de aplicación.
 
 Ejemplo:
 
 ```mermaid
 flowchart LR
 
-    GPO["📜 GPO-Servidores<br/>Firewall + Configuración + Scripts"]
+    GPO["📜 GPO-Servidores<br/>Firewall + Servicios + Scripts"]
 
     OU["📁 OU Servidores"]
 
@@ -115,82 +176,135 @@ flowchart LR
     FILE["🖥️ FILE01"]
     WEB["🖥️ WEB01"]
 
-    GPO -->|"se vincula a"| OU
+    GPO -->|"Linked to"| OU
 
     OU --> SQL
     OU --> FILE
     OU --> WEB
 ```
 
-Así que:
+La interpretación sería:
 
 ```text
 GPO-Servidores
-        ↓
+       ↓
 OU Servidores
-        ↓
+       ↓
 SQL01
 FILE01
 WEB01
 ```
 
-Los **equipos que están dentro de esa OU** reciben la configuración de equipo de esa GPO, siempre que se cumplan las condiciones de aplicación.
+Los equipos ubicados dentro de esa OU pueden recibir las configuraciones de la GPO.
 
-Y para usuarios igual:
+---
+
+# GPO y grupos
+
+Aquí aparece una diferencia importante.
+
+Una GPO **no entra dentro de un grupo para buscar a sus miembros**.
+
+Ejemplo:
 
 ```text
-GPO-Usuarios
-     ↓
-OU Usuarios
-     ↓
-Eduardo
-Ana
-Carlos
+OU Informática
+├── Eduardo
+├── Ana
+└── HelpDesk
 ```
 
-### Un matiz importante sobre los grupos
+Si la GPO está vinculada a `OU Informática`, puede afectar a Eduardo y Ana porque sus objetos están ubicados dentro de esa OU.
 
-Has dicho:
+Pero si Pedro está en otra OU:
 
-> “Por eso es importante meter los grupos o equipos en las OUs para aplicar GPOs.”
+```text
+OU Ventas
+└── Pedro
+```
 
-Los **equipos y usuarios**, sí.
+y además:
 
-Los **grupos**, no exactamente.
+```text
+Pedro
+↓ MemberOf
+HelpDesk
+```
 
-Las GPO no se procesan “sobre un grupo” como si el grupo fuese el objetivo principal. Se procesan sobre **usuarios y equipos**. Lo que sí puedes hacer es utilizar grupos para **filtrar** quién recibe una GPO.
+Pedro no recibe automáticamente la GPO de `OU Informática` simplemente por pertenecer a `HelpDesk`.
+
+La GPO no sigue las relaciones `MemberOf`.
+
+---
+
+## Security Filtering
+
+Los grupos sí pueden utilizarse posteriormente para **filtrar quién recibe una GPO**.
 
 Por ejemplo:
 
 ```text
-GPO
- ↓ vinculada a
-OU Servidores
- ↓
+GPO-Informática
+↓
+Linked to → OU Informática
 
-SQL01
-FILE01
-WEB01
-
-pero:
+OU Informática
+├── Eduardo → HelpDesk
+├── Ana → Developers
+└── Juan → HelpDesk
 
 Security Filtering
-→ solo ciertos usuarios/equipos/grupos autorizados
+→ HelpDesk
 ```
 
-Para tu cabeza:
+Resultado:
 
-> **OU = dónde coloco los objetos.**
-> **Grupo = qué usuarios/equipos están relacionados por membresía.**
-> **GPO = qué configuración quiero aplicar.**
+```text
+Eduardo ✅
+Juan    ✅
+Ana     ❌
+```
 
-Y:
+Primero la OU determina el ámbito de la GPO.
+
+Después el Security Filtering puede restringir qué objetos dentro de ese ámbito terminan aplicándola.
+
+---
+
+# Conclusión
+
+La estructura básica puede entenderse así:
+
+```text
+USUARIO / EQUIPO
+      │
+      ├── está ubicado en una OU
+      │        ↓
+      │   organización + GPO
+      │
+      └── pertenece a grupos
+               ↓
+          permisos / roles
+```
+
+Y por otro lado:
 
 ```text
 GPO
-→ se vincula a una OU
-→ la OU contiene usuarios/equipos
-→ esos usuarios/equipos reciben la política
+ ↓
+Site / Domain / OU
+ ↓
+usuarios y equipos del ámbito
+ ↓
+Security Filtering opcional
+ ↓
+configuración aplicada
 ```
 
-Ese es el modelo que necesitas para entender después **GPO Abuse**.
+La idea más importante es no confundir:
+
+> **Grupo = membresía y permisos.**
+> **OU = ubicación y organización.**
+> **GPO = configuración centralizada.**
+
+Esta base es la que después permite entender correctamente **BloodHound, ACL Abuse y GPO Abuse**.
