@@ -1,6 +1,6 @@
 # Kerberos requiere un SPN para identificar el servicio
 
-Si un servicio de dominio va a ser utilizado mediante **Kerberos**, debe existir un **SPN (Service Principal Name)** correcto que identifique esa instancia de servicio y la relacione con la cuenta de Active Directory que la representa.
+## Si un servicio de dominio va a ser utilizado mediante **Kerberos**, debe existir un **SPN (Service Principal Name)** correcto que identifique esa instancia de servicio y la relacione con la cuenta de Active Directory que la representa.
 
 El SPN puede:
 
