@@ -1,3 +1,11 @@
+# ¿Existen dos tipos de cuentas de dominio: cuentas de usuario y cuentas de servicio?
+
+## Pregunta
+
+> **¿Entonces podemos decir que existen dos tipos de cuentas de dominio? Por un lado tenemos las cuentas de dominio de usuario y las cuentas de dominio de servicio.**
+
+## Respuesta
+
 Como modelo mental simplificado, sí, pero técnicamente no son dos tipos totalmente distintos.
 
 Puedes pensar:
