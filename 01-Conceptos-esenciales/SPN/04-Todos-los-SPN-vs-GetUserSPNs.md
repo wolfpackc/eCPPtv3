@@ -2,7 +2,7 @@
 
 ## 1. Si enumero todos los SPN de Active Directory
 
-Si obtengo **todos los SPN del dominio**, me puedo encontrar instancias de servicio asociadas a distintos tipos de cuentas o principals de Active Directory.
+Si obtengo **todos los SPN del dominio**, me puedo encontrar ** instancias de servicio ** asociadas a distintos tipos de cuentas o principals de Active Directory.
 
 Por ejemplo:
 
