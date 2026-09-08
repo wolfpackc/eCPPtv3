@@ -19,3 +19,5 @@ En un dominio de Active Directory también existen las cuentas integradas equiva
 La cuenta **Administrator del dominio** es una cuenta de usuario de dominio integrada con privilegios muy elevados. Puede utilizarse para autenticarse como cualquier otra cuenta de dominio allí donde las políticas lo permitan, pero normalmente se protege especialmente por su nivel de privilegios. La cuenta **Guest del dominio** también es una cuenta integrada, pero no es privilegiada: está pensada para accesos muy limitados y normalmente se encuentra deshabilitada. Ambas pueden habilitarse, deshabilitarse o restringirse mediante la configuración y las políticas correspondientes.
 
 Por tanto, una cuenta integrada del dominio sigue siendo una **cuenta de dominio**: se administra en Active Directory y no es la misma identidad que su equivalente local. La diferencia principal es que `Administrator` ya nace con capacidades administrativas elevadas, mientras que `Guest` nace como una cuenta fuertemente restringida.
+
+<img width="1448" height="1086" alt="ChatGPT Image 8 sept 2026, 14_35_13" src="https://github.com/user-attachments/assets/d175728b-d326-4049-8447-56a8646d0c1e" />
